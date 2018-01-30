@@ -18,8 +18,6 @@
 
 #ifdef XPAR_INTRGPIO_NUM_INSTANCES
 #include "mailbox_io.h"
-#else
-#error "ARGH!!!!!!!!!!!!!!!!!!!!!"
 #endif
 
 #define STDIN_OFFSET 0xF000
