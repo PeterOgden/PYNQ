@@ -32,10 +32,10 @@
 /******************************************************************************
  *
  *
- * @file i2c.c
+ * @file uart.h
  *
- * Implementing I2C related functions for PYNQ Microblaze, 
- * including the IIC read and write.
+ * Header file for UART related functions for PYNQ Microblaze, 
+ * including the UART read and write.
  *
  *
  * <pre>
@@ -43,75 +43,35 @@
  *
  * Ver   Who  Date     Changes
  * ----- --- ------- -----------------------------------------------
- * 1.00  yrq 01/09/18 release
- * 1.01  yrq 01/30/18 add protection macro
+ * 1.00  yrq 01/30/18 add protection macro
  *
  * </pre>
  *
  *****************************************************************************/
+#ifndef _UART_H_
+#define _UART_H_
+
 #include <xparameters.h>
-#include "i2c.h"
-
-#ifdef XPAR_XIIC_NUM_INSTANCES
-static XIic xi2c[XPAR_XIIC_NUM_INSTANCES];
-/************************** Function Definitions ***************************/
-i2c i2c_open_device(unsigned int device){
-    int status;
-    u16 dev_id;
-
-    dev_id = (u16)device;
-#ifdef XPAR_IIC_0_BASEADDR
-    if (device == XPAR_IIC_0_BASEADDR){
-        dev_id = 0;
-    }
-#endif
-#ifdef XPAR_IIC_1_BASEADDR
-    if (device == XPAR_IIC_1_BASEADDR){
-        dev_id = 1;
-    }
-#endif
-
-    status = XIic_Initialize(&xi2c[dev_id], dev_id);
-    if (status != XST_SUCCESS) {
-        return -1;
-    }
-    return (i2c)dev_id;
-}
-
-
-void i2c_read(i2c dev_id, unsigned int slave_address,
-              unsigned char* buffer, unsigned int length){
-    XIic_Recv(xi2c[dev_id].BaseAddress, 
-              slave_address, buffer, length, XIIC_STOP);
-}
-
 
 #ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#ifdef XPAR_IO_SWITCH_0_I2C0_BASEADDR
-i2c i2c_open(unsigned int sda, unsigned int scl){
-    init_io_switch();
-    set_pin(scl, SCL0);
-    set_pin(sda, SDA0);
-    return i2c_open_device(XPAR_IO_SWITCH_0_I2C0_BASEADDR);
-}
-#endif
+#include "xio_switch.h"
 #endif
 
+#ifdef XPAR_XUART_NUM_INSTANCES
+#include "xuartlite.h"
+#include "xuartlite_i.h"
 
-void i2c_write(i2c dev_id, unsigned int slave_address,
-               unsigned char* buffer, unsigned int length){
-    XIic_Send(xi2c[dev_id].BaseAddress, 
-              slave_address, buffer, length, XIIC_STOP);
-}
+/* 
+ * UART API
+ */
+typedef int uart;
 
-
-void i2c_close(i2c dev_id){
-    XIic_ClearStats(&xi2c[dev_id]);
-}
-
-
-unsigned int i2c_get_num_devices(void){
-    return XPAR_XIIC_NUM_INSTANCES;
-}
+uart uart_open_device(unsigned int device);
+uart uart_open(unsigned int tx, unsigned int int rx);
+void uart_read(uart dev_id, char* read_data, unsigned int length);
+void uart_write(uart dev_id, char* write_data, unsigned int length);
+void uart_close(uart dev_id);
+unsigned int uart_get_num_devices(void);
 
 #endif
+#endif  // _UART_H_

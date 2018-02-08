@@ -44,36 +44,92 @@
  * Ver   Who  Date     Changes
  * ----- --- ------- -----------------------------------------------
  * 1.00  yrq 01/09/18 release
+ * 1.01  yrq 01/30/18 add protection macro
  *
  * </pre>
  *
  *****************************************************************************/
+#include <xparameters.h>
 #include "timer.h"
 
+#ifdef XPAR_XTMRCTR_NUM_INSTANCES
+static XTmrCtr xtimer[XPAR_XTMRCTR_NUM_INSTANCES];
 /************************** Function Definitions ***************************/
-void delay_us(u32 usdelay, XTmrCtr *TmrInstancePtr){
-    XTmrCtr_SetResetValue(TmrInstancePtr, 1, usdelay*100);
-    // Start the timer0 for us delay
-    XTmrCtr_Start(TmrInstancePtr, 1);
-    // Wait for us delay to lapse
-    while(!XTmrCtr_IsExpired(TmrInstancePtr,1));
-    // Stop the timer0
-    XTmrCtr_Stop(TmrInstancePtr, 1);
-}
+timer timer_open_device(unsigned int device) {
+    int status;
+    u16 dev_id;
 
-void delay_ms(u32 msdelay, XTmrCtr *TmrInstancePtr){
-    delay_us(msdelay*1000,TmrInstancePtr);
-}
-
-int tmrctr_init(u16 DeviceID, XTmrCtr *TmrInstancePtr) {
-    int Status;
-
-    Status = XTmrCtr_Initialize(TmrInstancePtr,	DeviceID);
-    if (Status != XST_SUCCESS) {
-        return XST_FAILURE;
+    dev_id = (u16)device;
+#ifdef XPAR_TMRCTR_0_BASEADDR
+    if (device == XPAR_TMRCTR_0_BASEADDR){
+        dev_id = 0;
     }
+#endif
+#ifdef XPAR_TMRCTR_1_BASEADDR
+    if (device == XPAR_TMRCTR_1_BASEADDR){
+        dev_id = 1;
+    }
+#endif
 
-    XTmrCtr_SetOptions(TmrInstancePtr, 1,
+    status = XTmrCtr_Initialize(&xtimer[dev_id], dev_id);
+    if (status != XST_SUCCESS) {
+        return -1;
+    }
+    XTmrCtr_SetOptions(&xtimer[dev_id], 1,
         XTC_AUTO_RELOAD_OPTION | XTC_CSR_LOAD_MASK | XTC_CSR_DOWN_COUNT_MASK);
-    return 0;
+
+    return (timer)dev_id;
 }
+
+
+#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
+#ifdef XPAR_IO_SWITCH_0_TIMER0_BASEADDR
+timer timer_open(unsigned int pin){
+    init_io_switch();
+    set_pin(pin, TIMER_G0);
+    return timer_open_device(XPAR_IO_SWITCH_0_TIMER0_BASEADDR);
+}
+#endif
+#endif
+
+
+void timer_delay(timer dev_id, unsigned int cycles){
+    XTmrCtr_SetResetValue(&xtimer[dev_id], 1, cycles);
+    XTmrCtr_Start(&xtimer[dev_id], 1);
+    while(!XTmrCtr_IsExpired(&xtimer[dev_id],1));
+    XTmrCtr_Stop(&xtimer[dev_id], 1);
+}
+
+
+void timer_close(timer dev_id){
+    XTmrCtr_Stop(&xtimer[dev_id], 0);
+    XTmrCtr_Stop(&xtimer[dev_id], 1);
+    XTmrCtr_ClearStats(&xtimer[dev_id]);
+}
+
+
+void timer_pwm_generate(timer dev_id, unsigned int period, unsigned int pulse){
+    unsigned int base_address = xtimer[dev_id].BaseAddress;
+    XTmrCtr_WriteReg(base_address, 0, TCSR0, 0x296);
+    XTmrCtr_WriteReg(base_address, 1, TCSR0, 0x296);
+    // period in number of clock cycles
+    XTmrCtr_WriteReg(base_address, 0, TLR0, period);
+    // pulse in number of clock cycles
+    XTmrCtr_WriteReg(base_address, 1, TLR0, pulse);
+}
+
+
+void timer_pwm_stop(timer dev_id){
+    unsigned int base_address = xtimer[dev_id].BaseAddress;
+    XTmrCtr_WriteReg(base_address, 0, TCSR0, 0);
+    // disable timer 1
+    XTmrCtr_WriteReg(base_address, 1, TCSR0, 0);
+}
+
+
+unsigned int timer_get_num_devices(void){
+    return XPAR_XTMRCTR_NUM_INSTANCES;
+}
+
+
+#endif

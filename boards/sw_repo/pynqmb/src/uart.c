@@ -32,10 +32,10 @@
 /******************************************************************************
  *
  *
- * @file i2c.c
+ * @file uart.c
  *
- * Implementing I2C related functions for PYNQ Microblaze, 
- * including the IIC read and write.
+ * Implementing UART related functions for PYNQ Microblaze, 
+ * including the UART read and write.
  *
  *
  * <pre>
@@ -43,75 +43,70 @@
  *
  * Ver   Who  Date     Changes
  * ----- --- ------- -----------------------------------------------
- * 1.00  yrq 01/09/18 release
- * 1.01  yrq 01/30/18 add protection macro
+ * 1.00  yrq 01/30/18 add protection macro
  *
  * </pre>
  *
  *****************************************************************************/
 #include <xparameters.h>
-#include "i2c.h"
+#include "uart.h"
 
-#ifdef XPAR_XIIC_NUM_INSTANCES
-static XIic xi2c[XPAR_XIIC_NUM_INSTANCES];
+#ifdef XPAR_XUART_NUM_INSTANCES
+static XUartLite xuart[XPAR_XUART_NUM_INSTANCES];
 /************************** Function Definitions ***************************/
-i2c i2c_open_device(unsigned int device){
+uart uart_open_device(unsigned int device){
     int status;
     u16 dev_id;
-
+    
     dev_id = (u16)device;
-#ifdef XPAR_IIC_0_BASEADDR
-    if (device == XPAR_IIC_0_BASEADDR){
+#ifdef XPAR_UART_0_BASEADDR
+    if (device == XPAR_UART_0_BASEADDR){
         dev_id = 0;
     }
 #endif
-#ifdef XPAR_IIC_1_BASEADDR
-    if (device == XPAR_IIC_1_BASEADDR){
+#ifdef XPAR_UART_1_BASEADDR
+    if (device == XPAR_UART_1_BASEADDR){
         dev_id = 1;
     }
 #endif
 
-    status = XIic_Initialize(&xi2c[dev_id], dev_id);
+    status = XUartLite_Initialize(&xuart[dev_id], dev_id);
     if (status != XST_SUCCESS) {
         return -1;
     }
-    return (i2c)dev_id;
-}
-
-
-void i2c_read(i2c dev_id, unsigned int slave_address,
-              unsigned char* buffer, unsigned int length){
-    XIic_Recv(xi2c[dev_id].BaseAddress, 
-              slave_address, buffer, length, XIIC_STOP);
+    return (uart)dev_id;
 }
 
 
 #ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#ifdef XPAR_IO_SWITCH_0_I2C0_BASEADDR
-i2c i2c_open(unsigned int sda, unsigned int scl){
+#ifdef XPAR_IO_SWITCH_0_UART0_BASEADDR
+uart uart_open(unsigned int tx, unsigned int int rx){
     init_io_switch();
-    set_pin(scl, SCL0);
-    set_pin(sda, SDA0);
-    return i2c_open_device(XPAR_IO_SWITCH_0_I2C0_BASEADDR);
+    set_pin(tx, UART0_TX);
+    set_pin(rx, UART0_RX);
+    return uart_open_device(XPAR_IO_SWITCH_0_UART0_BASEADDR);
 }
 #endif
 #endif
 
 
-void i2c_write(i2c dev_id, unsigned int slave_address,
-               unsigned char* buffer, unsigned int length){
-    XIic_Send(xi2c[dev_id].BaseAddress, 
-              slave_address, buffer, length, XIIC_STOP);
+void uart_read(uart dev_id, char* read_data, unsigned int length){
+    XUartLite_Recv(&xuart[dev_id], read_data, length);
 }
 
 
-void i2c_close(i2c dev_id){
-    XIic_ClearStats(&xi2c[dev_id]);
+void uart_write(uart dev_id, char* write_data, unsigned int length){
+    XUartLite_Send(&xuart[dev_id], write_data, length);
 }
 
 
-unsigned int i2c_get_num_devices(void){
-    return XPAR_XIIC_NUM_INSTANCES;
+void uart_close(uart dev_id){
+    XUartLite_ClearStats(&xuart[dev_id]);
+}
+
+
+unsigned int uart_get_num_devices(void){
+    return XPAR_XUART_NUM_INSTANCES;
 }
 
 #endif
