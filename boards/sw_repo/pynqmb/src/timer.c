@@ -119,6 +119,10 @@ void delay_ms(unsigned int ms){
     timer_delay(0, cycles_per_ms * ms);
 }
 
+__attribute__((constructor))
+static void init_delay_timer() {
+    timer_open_device(0);
+}
 
 void timer_close(timer dev_id){
     XTmrCtr_Stop(&xtimer[dev_id], 0);
