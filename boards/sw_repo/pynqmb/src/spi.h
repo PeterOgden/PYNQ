@@ -54,13 +54,7 @@
 
 #include <xparameters.h>
 
-#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#include "xio_switch.h"
-#endif
-
 #ifdef XPAR_XSPI_NUM_INSTANCES
-#include "xspi_l.h"
-#include "xspi.h"
 
 /*
  * SPI API

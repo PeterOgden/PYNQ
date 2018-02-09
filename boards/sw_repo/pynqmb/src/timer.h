@@ -54,12 +54,7 @@
 
 #include <xparameters.h>
 
-#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#include "xio_switch.h"
-#endif
-
 #ifdef XPAR_XTMRCTR_NUM_INSTANCES
-#include "xtmrctr.h"
 
 // TCSR0 Timer 0 Control and Status Register
 #define TCSR0 0x00

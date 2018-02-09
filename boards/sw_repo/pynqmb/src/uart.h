@@ -53,13 +53,7 @@
 
 #include <xparameters.h>
 
-#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#include "xio_switch.h"
-#endif
-
 #ifdef XPAR_XUART_NUM_INSTANCES
-#include "xuartlite.h"
-#include "xuartlite_i.h"
 
 /* 
  * UART API

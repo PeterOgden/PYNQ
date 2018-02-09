@@ -114,8 +114,8 @@ static void volatile_cpy(volatile char* dest, volatile char* src, int len) {
 }
 
 int mailbox_available(int file) {
-	if (file < 0 || file >= MAX_DESCRIPTOR || \
-    descriptors[file].base_addr == NULL) {
+	if (file < 0 || file >= MAX_DESCRIPTOR ||
+			descriptors[file].base_addr == NULL) {
 		errno = EBADF;
 		return -1;
 	}
@@ -141,9 +141,9 @@ int mailbox_available(int file) {
 }
 
 ssize_t mailbox_write(int file, const void* ptr, size_t len) {
-	if (file < 0 || file >= MAX_DESCRIPTOR || \
-    descriptors[file].flags != O_WRONLY || \
-    descriptors[file].base_addr == NULL) {
+	if (file < 0 || file >= MAX_DESCRIPTOR ||
+		    descriptors[file].flags != O_WRONLY ||
+		    descriptors[file].base_addr == NULL) {
 		errno = EBADF;
 		return -1;
 	}
@@ -159,8 +159,8 @@ ssize_t mailbox_write(int file, const void* ptr, size_t len) {
 	}
 	int write_ptr = *ctrl;
 	int to_write = (int)len < available? (int)len : available;
-	int first_block = \
-    to_write < (buf_size - write_ptr)? to_write: buf_size - write_ptr;
+	int first_block = 
+		to_write < (buf_size - write_ptr)? to_write: buf_size - write_ptr;
 	volatile_cpy(buffer + write_ptr, (char*)ptr, first_block);
 	if (first_block < to_write) {
 		volatile_cpy(buffer, (char*)ptr + first_block, to_write - first_block);
@@ -177,9 +177,9 @@ ssize_t mailbox_write(int file, const void* ptr, size_t len) {
 }
 
 ssize_t mailbox_read(int file, void* ptr, size_t len) {
-	if (file < 0 || file >= MAX_DESCRIPTOR || \
-    descriptors[file].flags != O_RDONLY || \
-    descriptors[file].base_addr == NULL) {
+	if (file < 0 || file >= MAX_DESCRIPTOR || 
+			descriptors[file].flags != O_RDONLY || 
+			descriptors[file].base_addr == NULL) {
 		errno = EBADF;
 		return -1;
 	}
@@ -196,8 +196,8 @@ ssize_t mailbox_read(int file, void* ptr, size_t len) {
 	}
 	int read_ptr = *status;
 	int to_read = (int)len < available? (int)len : available;
-	int first_block = \
-    to_read < (buf_size - read_ptr)? to_read: buf_size - read_ptr;
+	int first_block =
+		to_read < (buf_size - read_ptr)? to_read: buf_size - read_ptr;
 	volatile_cpy((char*)ptr, buffer + read_ptr, first_block);
 	if (first_block < to_read) {
 		volatile_cpy((char*)ptr + first_block, buffer, to_read - first_block);
@@ -230,17 +230,19 @@ int mailbox_close(int fd) {
 }
 
 
-void mailbox_outbyte(intptr_t device, char c) {
+void mailbox_outbyte(intptr_t device __attribute__((unused)), char c) {
 	mailbox_write(1, &c, 1);
 }
 
-char mailbox_inbyte(intptr_t device) {
+char mailbox_inbyte(intptr_t device __attribute__((unused))) {
 	char c;
 	mailbox_read(0, &c, 1);
 	return c;
 }
 
-off_t mailbox_lseek(int fd, off_t offset, int whence) {
+off_t mailbox_lseek(int fd __attribute__((unused)),
+		off_t offset __attribute__((unused)),
+		int whence __attribute__((unused))) {
 	return ESPIPE;
 }
 
@@ -254,7 +256,9 @@ ssize_t read(int file, void* ptr, size_t len) {
 	return mailbox_read(file, ptr, len);
 }
 
-off_t lseek(int fd, off_t offset, int whence) {
+off_t lseek(int fd __attribute__((unused)),
+		off_t offset __attribute__((unused)),
+		int whence __attribute__((unused))) {
 	return ESPIPE;
 }
 

@@ -53,13 +53,7 @@
 
 #include <xparameters.h>
 
-#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#include "xio_switch.h"
-#endif
-
 #ifdef XPAR_XGPIO_NUM_INSTANCES
-#include "xgpio_l.h"
-#include "xgpio.h"
 
 enum {
 GPIO_OUT = 0,
@@ -68,31 +62,16 @@ GPIO_INDEX_MIN = 0,
 GPIO_INDEX_MAX = 31,
 };
 
-/* 
- * GPIO API
- * Internal GPIO bit format:
- * 0:0 valid bit
- * 6:1 low bit
- * 12:7 high bit
- * 15:13 channel 1 or channel 2
- * 31:16 device
- */
-typedef int _gpio;
-typedef union {
-    int fd;
-    struct {
-        int valid: 1, low : 6, high : 6, channel : 3, device : 16;
-    } _gpio;
-} gpio;
+typedef int gpio;
 
 gpio gpio_open_device(unsigned int device);
 gpio gpio_open(unsigned int pin);
-gpio gpio_configure(gpio mod_id, unsigned int low, unsigned int high, 
+gpio gpio_configure(gpio fd, unsigned int low, unsigned int high, 
                     unsigned int channel);
-void gpio_set_direction(gpio mod_id, unsigned int direction);
-int gpio_read(gpio mod_id);
-void gpio_write(gpio mod_id, unsigned int data);
-void gpio_close(gpio mod_id);
+void gpio_set_direction(gpio fd, unsigned int direction);
+int gpio_read(gpio fd);
+void gpio_write(gpio fd, unsigned int data);
+void gpio_close(gpio fd);
 unsigned int gpio_get_num_devices(void);
 
 #endif

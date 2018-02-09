@@ -54,12 +54,7 @@
 
 #include <xparameters.h>
 
-#ifdef XPAR_IO_SWITCH_NUM_INSTANCES
-#include "xio_switch.h"
-#endif
-
 #ifdef XPAR_XIIC_NUM_INSTANCES
-#include "xiic.h"
 
 /* 
  * IIC API
