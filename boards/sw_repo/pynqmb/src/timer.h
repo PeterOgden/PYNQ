@@ -91,5 +91,11 @@ void timer_pwm_generate(timer dev_id, unsigned int period, unsigned int pulse);
 void timer_pwm_stop(timer dev_id);
 unsigned int timer_get_num_devices(void);
 
+/* 
+ * Higher-level API for users
+ */
+void delay_us(unsigned int us);
+void delay_ms(unsigned int ms);
+
 #endif
 #endif  // _TIMER_H_
