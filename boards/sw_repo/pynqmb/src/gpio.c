@@ -65,7 +65,7 @@
  */
 typedef int gpio;
 typedef union {
-    int fd;
+    int device;
     struct {
         int valid: 1, low : 6, high : 6, channel : 3, device : 16;
     } _gpio;
@@ -102,7 +102,7 @@ gpio gpio_open_device(unsigned int device){
     gpio_dev._gpio.high = GPIO_INDEX_MAX;
     gpio_dev._gpio.channel = 1;
     gpio_dev._gpio.device = dev_id;
-    return gpio_dev.fd;
+    return gpio_dev.device;
 }
 
 #ifdef XPAR_IO_SWITCH_NUM_INSTANCES
@@ -117,21 +117,21 @@ gpio gpio_open(unsigned int pin) {
 #endif
 
 
-gpio gpio_configure(gpio fd, unsigned int low, unsigned int high, 
+gpio gpio_configure(gpio device, unsigned int low, unsigned int high, 
                     unsigned int channel){
     _gpio gpio_dev;
-    gpio_dev.fd = fd;
+    gpio_dev.device = device;
     gpio_dev._gpio.low = low;
     gpio_dev._gpio.high = high;
     gpio_dev._gpio.channel = channel;
-    return gpio_dev.fd;
+    return gpio_dev.device;
 }
 
 
-void gpio_set_direction(gpio fd, unsigned int direction){
+void gpio_set_direction(gpio device, unsigned int direction){
     unsigned int mask, low, high, channel, dev_id, direction_mask;
     _gpio gpio_dev;
-    gpio_dev.fd = fd;
+    gpio_dev.device = device;
     low = gpio_dev._gpio.low;
     high = gpio_dev._gpio.high;
     channel = gpio_dev._gpio.channel;
@@ -150,10 +150,10 @@ void gpio_set_direction(gpio fd, unsigned int direction){
 }
 
 
-int gpio_read(gpio fd){
+int gpio_read(gpio device){
     unsigned int read_value, mask, low, high, channel, dev_id;
     _gpio gpio_dev;
-    gpio_dev.fd = fd;
+    gpio_dev.device = device;
     low = gpio_dev._gpio.low;
     high = gpio_dev._gpio.high;
     channel = gpio_dev._gpio.channel;
@@ -165,10 +165,10 @@ int gpio_read(gpio fd){
 }
 
 
-void gpio_write(gpio fd, unsigned int data){
+void gpio_write(gpio device, unsigned int data){
     unsigned int write_value, mask, low, high, channel, dev_id;
     _gpio gpio_dev;
-    gpio_dev.fd = fd;
+    gpio_dev.device = device;
     low = gpio_dev._gpio.low;
     high = gpio_dev._gpio.high;
     channel = gpio_dev._gpio.channel;
@@ -181,10 +181,10 @@ void gpio_write(gpio fd, unsigned int data){
 }
 
 
-void gpio_close(gpio fd){
+void gpio_close(gpio device){
     unsigned int mask, low, high, channel, dev_id;
     _gpio mod_id;
-    mod_id.fd = fd;
+    mod_id.device = device;
     low = mod_id._gpio.low;
     high = mod_id._gpio.high;
     channel = mod_id._gpio.channel;

@@ -66,12 +66,12 @@ typedef int gpio;
 
 gpio gpio_open_device(unsigned int device);
 gpio gpio_open(unsigned int pin);
-gpio gpio_configure(gpio fd, unsigned int low, unsigned int high, 
+gpio gpio_configure(gpio device, unsigned int low, unsigned int high, 
                     unsigned int channel);
-void gpio_set_direction(gpio fd, unsigned int direction);
-int gpio_read(gpio fd);
-void gpio_write(gpio fd, unsigned int data);
-void gpio_close(gpio fd);
+void gpio_set_direction(gpio device, unsigned int direction);
+int gpio_read(gpio device);
+void gpio_write(gpio device, unsigned int data);
+void gpio_close(gpio device);
 unsigned int gpio_get_num_devices(void);
 
 #endif
