@@ -11,7 +11,8 @@ echo ${mount_points[1]}
 root_part=/dev/mapper/${mount_points[1]}
 boot_part=/dev/mapper/${mount_points[0]}
 
-sleep 2
+sleep 5
+mkdir -p $image_dir
 
 mount $root_part $image_dir
 mount $boot_part $image_dir/boot

@@ -20,5 +20,6 @@ mkfs -t ext4 $root_part
 
 mkdir $image_dir
 mount $root_part $image_dir
+sleep 2
 mkdir $image_dir/boot
 mount $boot_part $image_dir/boot

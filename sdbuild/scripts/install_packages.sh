@@ -40,7 +40,11 @@ export CXX=/usr/lib/ccache/g++
 
 for p in $@ 
 do
-  f=$WORKDIR/packages/$p
+  if [ -n "$PACKAGE_PATH" -a -e $PACKAGE_PATH/$p ]; then
+    f=$PACKAGE_PATH/$p
+  else
+    f=$ROOTDIR/packages/$p
+  fi
   if [ -e $f/pre.sh ]; then
     $dry_run $f/pre.sh $target
   fi
