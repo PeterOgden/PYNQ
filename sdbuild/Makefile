@@ -51,18 +51,18 @@ endif
 
 PACKAGE_MAKES := $(wildcard ${CURDIR}/packages/*/Makefile)
 include ${PACKAGE_MAKES}
-include $(wildcard $(CURDIR)/base/$(UBUNTU_RELEASE)/*/config)
+include $(wildcard $(CURDIR)/ubuntu/$(UBUNTU_RELEASE)/*/config)
 include $(wildcard $(BOARDDIR)/*/*.spec)
 
 define BOARD_SPECIFIC_RULES
 # $1 is the board name
 BOARDDIR_$1 := $$(BOARDDIR)/$1
 BSP_ABS_$1 := $$(BOARDDIR_$1)/$$(BSP_$1)
-BITSTREAM_ABS_$1 := $$(BOARDDIR_$1)/$$(BITSTREAM_$1)
+BITSTREAM_ABS_$1 := $$(patsubst %, $$(BOARDDIR_$1)/%, $$(BITSTREAM_$1))
 BUILD_ROOT_$1 := $${BUILD_ROOT}/$1
 BOOT_ROOT_$1 := $${BOOT_ROOT}/$1
 QEMU_$1 := $$(shell which qemu-$$(ARCH_$1)-static)
-PACKAGE_ENV_$1 := QEMU_EXE=$${QEMU_$1} PYNQ_BOARD=$1 ARCH=$${ARCH=$1} PACKAGE_PATH=$$(BOARDDIR_$1)/packages
+PACKAGE_ENV_$1 := QEMU_EXE=$${QEMU_$1} PYNQ_BOARDDIR=$$(BOARDDIR_$1) PYNQ_BOARD=$1 ARCH=$${ARCH=$1} PACKAGE_PATH=$$(BOARDDIR_$1)/packages
 
 IMAGE_$1 := $${IMAGE_ROOT}/$1-$${VERSION}.img
 
@@ -144,7 +144,7 @@ STAGE1_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1.stage1.img
 STAGE2_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1.stage2.img
 STAGE2_DEPENDS_$1 := $${foreach package, $${STAGE2_PACKAGES_$1}, $${PACKAGE_BUILD_$${package}_$1} $${PACKAGE_BUILD_$${package}}}
 STAGE3_DEPENDS_$1 := $${foreach package, $${STAGE3_PACKAGES_$1}, $${PACKAGE_BUILD_$${package}_$1} $${PACKAGE_BUILD_$${package}}}
-CONFIG_$1 := $${CURDIR}/base/$${UBUNTU_RELEASE}/$1
+CONFIG_$1 := $${CURDIR}/ubuntu/$${UBUNTU_RELEASE}/$1
 QEMU_$1 := $$(shell which qemu-$1-static)
 PACKAGE_ENV_$1 := QEMU_EXE=$${QEMU_$1} PYNQ_BOARD=Unknown ARCH=$1
 
@@ -161,6 +161,7 @@ $${BASE_$1} : $${STAGE2_$1} $${STAGE3_DEPENDS_$1} | $${IMAGE_ROOT}
 	sudo -E $${SCRIPT_DIR}/unmount_image.sh $${STAGING_$1} $${BASE_$1}
 
 $${STAGE1_$1}: $${CONFIG_$1}/multistrap.config | $${BUILD_ROOT} $${CCACHEDIR}
+	-rm $$@
 	sudo -E ${SCRIPT_DIR}/create_mount_img.sh $${STAGE1_$1} $${STAGING_$1}
 	$${PACKAGE_ENV_$1} sudo -E $${SCRIPT_DIR}/create_rootfs.sh $${STAGING_$1} $${CONFIG_$1}
 	sudo -E ${SCRIPT_DIR}/unmount_image.sh $${STAGING_$1} $${STAGE1_$1}
