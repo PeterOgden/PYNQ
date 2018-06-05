@@ -186,8 +186,9 @@ checkenv:
 	which arm-linux-gnueabihf-gcc
 	which microblaze-xilinx-elf-gcc
 	which ct-ng
-	${QEMU_arm} -version | fgrep 2.8.0
-	${QEMU_aarch64} -version | fgrep 2.8.0
+	qemu-arm -version | fgrep 2.8.0
+	qemu-aarch64 -version | fgrep 2.8.0
+	which python | fgrep /usr/bin/python
 	sudo -n true
 	bash ${SCRIPT_DIR}/check_Env.sh
 	bash ${SCRIPT_DIR}/check_mounts.sh
