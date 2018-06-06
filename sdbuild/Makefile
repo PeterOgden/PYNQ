@@ -7,11 +7,11 @@ SCRIPT_DIR := $(CURDIR)/scripts
 
 all: real_all
 
-BUILD_ROOT := ${CURDIR}/build
-BOOT_ROOT := ${CURDIR}/output/boot
-IMAGE_ROOT := ${CURDIR}/output
-CCACHEDIR := ${CURDIR}/ccache
-ROOTDIR := ${CURDIR}
+BUILD_ROOT := $(CURDIR)/build
+BOOT_ROOT := $(CURDIR)/output/boot
+IMAGE_ROOT := $(CURDIR)/output
+CCACHEDIR := $(CURDIR)/ccache
+ROOTDIR := $(CURDIR)
 SDX_ROOT := $(IMAGE_ROOT)/sdx
 SYSROOT_ROOT := $(IMAGE_ROOT)/sysroot
 
@@ -25,16 +25,16 @@ export ROOTDIR
 export BUILD_ROOT
 export BB_ENV_EXTRAWHITE := PYNQ_BOARDNAME
 
-${IMAGE_ROOT}:
+$(IMAGE_ROOT):
 	mkdir -p $@
 
-${BUILD_ROOT}:
+$(BUILD_ROOT):
 	mkdir -p $@
 
-${BOOT_ROOT}:
+$(BOOT_ROOT):
 	mkdir -p $@
 
-${CCACHEDIR}:
+$(CCACHEDIR):
 	mkdir -p $@
 
 $(SDX_ROOT):
@@ -43,22 +43,22 @@ $(SDX_ROOT):
 $(SYSROOT_ROOT):
 	mkdir -p $@
 
-PYNQ_UPDATE := ${BUILD_ROOT}/PYNQ/.git/HEAD
+PYNQ_UPDATE := $(BUILD_ROOT)/PYNQ/.git/HEAD
 PYNQ_MASTER_COMMIT := $(shell git rev-parse HEAD)
-PYNQ_CLONED_COMMIT := $(shell cd ${BUILD_ROOT}/PYNQ 2> /dev/null && git rev-parse HEAD)
+PYNQ_CLONED_COMMIT := $(shell cd $(BUILD_ROOT)/PYNQ 2> /dev/null && git rev-parse HEAD)
 
-${BUILD_ROOT}/PYNQ: | ${BUILD_ROOT}
+$(BUILD_ROOT)/PYNQ: | $(BUILD_ROOT)
 	git clone ../ $@
 
-${PYNQ_UPDATE}: | ${BUILD_ROOT}/PYNQ
-	cd ${BUILD_ROOT}/PYNQ && git fetch origin && git checkout ${PYNQ_MASTER_COMMIT}
+$(PYNQ_UPDATE): | $(BUILD_ROOT)/PYNQ
+	cd $(BUILD_ROOT)/PYNQ && git fetch origin && git checkout $(PYNQ_MASTER_COMMIT)
 
-ifneq "${PYNQ_MASTER_COMMIT}" "${PYNQ_CLONED_COMMIT}"
-.PHONY: ${PYNQ_UPDATE}
+ifneq "$(PYNQ_MASTER_COMMIT)" "$(PYNQ_CLONED_COMMIT)"
+.PHONY: $(PYNQ_UPDATE)
 endif
 
-PACKAGE_MAKES := $(wildcard ${CURDIR}/packages/*/Makefile)
-include ${PACKAGE_MAKES}
+PACKAGE_MAKES := $(wildcard $(CURDIR)/packages/*/Makefile)
+include $(PACKAGE_MAKES)
 include $(wildcard $(CURDIR)/ubuntu/$(UBUNTU_RELEASE)/*/config)
 include $(wildcard $(BOARDDIR)/*/*.spec)
 
@@ -67,79 +67,79 @@ define BOARD_SPECIFIC_RULES
 BOARDDIR_$1 := $$(BOARDDIR)/$1
 BSP_ABS_$1 := $$(BOARDDIR_$1)/$$(BSP_$1)
 BITSTREAM_ABS_$1 := $$(patsubst %, $$(BOARDDIR_$1)/%, $$(BITSTREAM_$1))
-BUILD_ROOT_$1 := $${BUILD_ROOT}/$1
-BOOT_ROOT_$1 := $${BOOT_ROOT}/$1
+BUILD_ROOT_$1 := $$(BUILD_ROOT)/$1
+BOOT_ROOT_$1 := $$(BOOT_ROOT)/$1
 QEMU_$1 := $$(shell which qemu-$$(ARCH_$1)-static)
-PACKAGE_ENV_$1 := QEMU_EXE=$${QEMU_$1} PYNQ_BOARDDIR=$$(BOARDDIR_$1) PYNQ_BOARD=$1 ARCH=$${ARCH=$1} PACKAGE_PATH=$$(BOARDDIR_$1)/packages
+PACKAGE_ENV_$1 := QEMU_EXE=$$(QEMU_$1) PYNQ_BOARDDIR=$$(BOARDDIR_$1) PYNQ_BOARD=$1 ARCH=$$(ARCH=$1) PACKAGE_PATH=$$(BOARDDIR_$1)/packages
 
-IMAGE_$1 := $${IMAGE_ROOT}/$1-$${VERSION}.img
+IMAGE_$1 := $$(IMAGE_ROOT)/$1-$$(VERSION).img
 
-PL_PROJ_$1 := $${BUILD_ROOT_$1}/petalinux_project
-PL_CONFIG_$1 := $${PL_PROJ_$1}/project-spec/configs/config
-MODULES_$1 := $${PL_PROJ_$1}/build/tmp/deploy/images/plnx_$${ARCH_$1}/modules-plnx_$${ARCH_$1}.tgz
+PL_PROJ_$1 := $$(BUILD_ROOT_$1)/petalinux_project
+PL_CONFIG_$1 := $$(PL_PROJ_$1)/project-spec/configs/config
+MODULES_$1 := $$(PL_PROJ_$1)/build/tmp/deploy/images/plnx_$$(ARCH_$1)/modules-plnx_$$(ARCH_$1).tgz
 
-BOOT_FILES_$1 := $${BOOT_ROOT_$1}/image.ub $${BOOT_ROOT_$1}/BOOT.BIN
+BOOT_FILES_$1 := $$(BOOT_ROOT_$1)/image.ub $$(BOOT_ROOT_$1)/BOOT.BIN
 BOOT_DEPENDS_$1 := $$(patsubst %, $$(PL_PROJ_$1)/images/linux/%, $$(BOOT_$$(ARCH_$1)))
-$${PL_PROJ_$1}: $${BSP_ABS_$1} | $${BUILD_ROOT_$1}
-	-rm -rf $${PL_PROJ_$1}
-	cd $${BUILD_ROOT_$1} && petalinux-create -t project -s $${BSP_ABS_$1} -n petalinux_project
-	echo 'CONFIG_USER_LAYER_0="'${CURDIR}/boot/meta-pynq'"' >> $${PL_CONFIG_$1}
-	echo 'CONFIG_SUBSYSTEM_ROOTFS_SD=y' >> $${PL_CONFIG_$1}
-	echo 'CONFIG_SUBSYSTEM_ETHERNET_MANUAL_SELECT=y' >> $${PL_CONFIG_$1}
-	petalinux-config --oldconfig -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1): $$(BSP_ABS_$1) | $$(BUILD_ROOT_$1)
+	-rm -rf $$(PL_PROJ_$1)
+	cd $$(BUILD_ROOT_$1) && petalinux-create -t project -s $$(BSP_ABS_$1) -n petalinux_project
+	echo 'CONFIG_USER_LAYER_0="'$(CURDIR)/boot/meta-pynq'"' >> $$(PL_CONFIG_$1)
+	echo 'CONFIG_SUBSYSTEM_ROOTFS_SD=y' >> $$(PL_CONFIG_$1)
+	echo 'CONFIG_SUBSYSTEM_ETHERNET_MANUAL_SELECT=y' >> $$(PL_CONFIG_$1)
+	petalinux-config --oldconfig -p $$(PL_PROJ_$1)
 
-$${BOOT_ROOT_$1}/BOOT.BIN : $${BOOT_DEPENDS_$1} $${BOOT_BITSTREAM_$1} | $${BOOT_ROOT_$1}
-	cd $${BOOT_ROOT_$1} && petalinux-package --boot --fpga $${BITSTREAM_ABS_$1} --u-boot -p $${PL_PROJ_$1} --force
+$$(BOOT_ROOT_$1)/BOOT.BIN : $$(BOOT_DEPENDS_$1) $$(BOOT_BITSTREAM_$1) | $$(BOOT_ROOT_$1)
+	cd $$(BOOT_ROOT_$1) && petalinux-package --boot --fpga $$(BITSTREAM_ABS_$1) --u-boot -p $$(PL_PROJ_$1) --force
 
-$${BOOT_ROOT_$1}/image.ub : $${BUILD_ROOT_$1}/image.its $${BUILD_ROOT_$1}/system.dtb $${BUILD_ROOT_$1}/$${KERNEL_$${ARCH_$1}} | $${BOOT_ROOT_$1}
-	cd $${BOOT_ROOT_$1} && mkimage -f $${BUILD_ROOT_$1}/image.its $$@
+$$(BOOT_ROOT_$1)/image.ub : $$(BUILD_ROOT_$1)/image.its $$(BUILD_ROOT_$1)/system.dtb $$(BUILD_ROOT_$1)/$$(KERNEL_$$(ARCH_$1)) | $$(BOOT_ROOT_$1)
+	cd $$(BOOT_ROOT_$1) && mkimage -f $$(BUILD_ROOT_$1)/image.its $$@
 
-$${BUILD_ROOT_$1}/image.its: $${CURDIR}/boot/image_$${ARCH_$1}.its | $${BUILD_ROOT_$1}
+$$(BUILD_ROOT_$1)/image.its: $$(CURDIR)/boot/image_$$(ARCH_$1).its | $$(BUILD_ROOT_$1)
 	cp $$< $$@
 
-$${PL_CONFIG_$1}: $$(BSP_ABS_$1) | $${PL_PROJ_$1}; 
+$$(PL_CONFIG_$1): $$(BSP_ABS_$1) | $$(PL_PROJ_$1); 
 
-$${PL_PROJ_$1}/images/linux/%_fsbl.elf: $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c bootloader -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/%_fsbl.elf: $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c bootloader -p $$(PL_PROJ_$1)
 
-$${PL_PROJ_$1}/images/linux/u-boot.elf: $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c u-boot -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/u-boot.elf: $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c u-boot -p $$(PL_PROJ_$1)
 
-$${PL_PROJ_$1}/images/linux/$${KERNEL_$${ARCH_$1}}: $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c kernel -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/$$(KERNEL_$$(ARCH_$1)): $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c kernel -p $$(PL_PROJ_$1)
 
-$${PL_PROJ_$1}/images/linux/system.dtb:  $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c device-tree -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/system.dtb:  $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c device-tree -p $$(PL_PROJ_$1)
 
-$${PL_PROJ_$1}/images/linux/pmufw.elf:  $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c pmufw -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/pmufw.elf:  $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c pmufw -p $$(PL_PROJ_$1)
 
-$${PL_PROJ_$1}/images/linux/bl31.elf:  $${PL_CONFIG_$1}
-	PYNQ_BOARDNAME=$1 petalinux-build -c arm-trusted-firmware -p $${PL_PROJ_$1}
+$$(PL_PROJ_$1)/images/linux/bl31.elf:  $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c arm-trusted-firmware -p $$(PL_PROJ_$1)
 
-$${MODULES_$1}: $${PL_PROJ_$1}/images/linux/$${KERNEL_$${ARCH_$1}}
+$$(MODULES_$1): $$(PL_PROJ_$1)/images/linux/$$(KERNEL_$$(ARCH_$1))
 
-$${BUILD_ROOT_$1}/% : $${PL_PROJ_$1}/images/linux/%
+$$(BUILD_ROOT_$1)/% : $$(PL_PROJ_$1)/images/linux/%
 	cp $$< $$@
 
-$${BUILD_ROOT_$1}:
+$$(BUILD_ROOT_$1):
 	mkdir -p $$@
 
-$${BOOT_ROOT_$1}:
+$$(BOOT_ROOT_$1):
 	mkdir -p $$@
 
-BASE_$1 ?= $${UBUNTU_RELEASE}.$${ARCH_$1}.$${VERSION}.img
-BASE_PATH_$1 := $${IMAGE_ROOT}/$${BASE_$1}
-STAGE4_DEPENDS_$1 := $${foreach package, $${STAGE4_PACKAGES_$1}, $${PACKAGE_BUILD_$${package}_$1} $${PACKAGE_BUILD_$${package}}}
-STAGING_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1
+BASE_$1 ?= $$(UBUNTU_RELEASE).$$(ARCH_$1).$$(VERSION).img
+BASE_PATH_$1 := $$(IMAGE_ROOT)/$$(BASE_$1)
+STAGE4_DEPENDS_$1 := $$(foreach package, $$(STAGE4_PACKAGES_$1), $$(PACKAGE_BUILD_$$(package)_$1) $$(PACKAGE_BUILD_$$(package)))
+STAGING_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1
 
-$${IMAGE_$1} : $${BASE_PATH_$1} $${STAGE4_DEPENDS_$1} $${BOOT_FILES_$1} $${MODULES_$1}
-	cp --sparse=always $${BASE_PATH_$1} $${IMAGE_$1}
-	sudo -E $${SCRIPT_DIR}/mount_image.sh $${IMAGE_$1} $${STAGING_$1}
-	$${PACKAGE_ENV_$1} sudo -E $${SCRIPT_DIR}/install_packages.sh $${STAGING_$1} $${STAGE4_PACKAGES_$1}
-	sudo cp $${BOOT_FILES_$1} $${STAGING_$1}/boot
-	cd $${STAGING_$1} && sudo tar -xf $${MODULES_$1}
-	sudo -E $${SCRIPT_DIR}/resize_umount.sh $${IMAGE_$1} $${STAGING_$1}
+$$(IMAGE_$1) : $$(BASE_PATH_$1) $$(STAGE4_DEPENDS_$1) $$(BOOT_FILES_$1) $$(MODULES_$1)
+	cp --sparse=always $$(BASE_PATH_$1) $$(IMAGE_$1)
+	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(IMAGE_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE4_PACKAGES_$1)
+	sudo cp $$(BOOT_FILES_$1) $$(STAGING_$1)/boot
+	cd $$(STAGING_$1) && sudo tar -xf $$(MODULES_$1)
+	sudo -E $$(SCRIPT_DIR)/resize_umount.sh $$(IMAGE_$1) $$(STAGING_$1)
 
 
 # SDX Specific Rules
@@ -183,34 +183,34 @@ endef
 define ARCH_SPECIFIC_RULES
 # $1 is the architecture
 # Used to generate the board-independent root filesystems
-BASE_$1 := $${IMAGE_ROOT}/$${UBUNTU_RELEASE}.$1.$${VERSION}.img
-STAGING_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1
-STAGE1_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1.stage1.img
-STAGE2_$1 := $${BUILD_ROOT}/$${UBUNTU_RELEASE}.$1.stage2.img
-STAGE2_DEPENDS_$1 := $${foreach package, $${STAGE2_PACKAGES_$1}, $${PACKAGE_BUILD_$${package}_$1} $${PACKAGE_BUILD_$${package}}}
-STAGE3_DEPENDS_$1 := $${foreach package, $${STAGE3_PACKAGES_$1}, $${PACKAGE_BUILD_$${package}_$1} $${PACKAGE_BUILD_$${package}}}
-CONFIG_$1 := $${CURDIR}/ubuntu/$${UBUNTU_RELEASE}/$1
+BASE_$1 := $$(IMAGE_ROOT)/$$(UBUNTU_RELEASE).$1.$$(VERSION).img
+STAGING_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1
+STAGE1_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1.stage1.img
+STAGE2_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1.stage2.img
+STAGE2_DEPENDS_$1 := $$(foreach package, $$(STAGE2_PACKAGES_$1), $$(PACKAGE_BUILD_$$(package)_$1) $$(PACKAGE_BUILD_$$(package)))
+STAGE3_DEPENDS_$1 := $$(foreach package, $$(STAGE3_PACKAGES_$1), $$(PACKAGE_BUILD_$$(package)_$1) $$(PACKAGE_BUILD_$$(package)))
+CONFIG_$1 := $$(CURDIR)/ubuntu/$$(UBUNTU_RELEASE)/$1
 QEMU_$1 := $$(shell which qemu-$1-static)
-PACKAGE_ENV_$1 := QEMU_EXE=$${QEMU_$1} PYNQ_BOARD=Unknown ARCH=$1
+PACKAGE_ENV_$1 := QEMU_EXE=$$(QEMU_$1) PYNQ_BOARD=Unknown ARCH=$1
 SYSROOT_$1 := $$(SYSROOT_ROOT)/$1
 
-$${STAGE2_$1} : $${STAGE1_$1} $${STAGE2_DEPENDS_$1}
-	cp --sparse=always $${STAGE1_$1} $${STAGE2_$1}
-	sudo -E $${SCRIPT_DIR}/mount_image.sh $${STAGE2_$1} $${STAGING_$1}
-	$${PACKAGE_ENV_$1} sudo -E $${SCRIPT_DIR}/install_packages.sh $${STAGING_$1} $${STAGE2_PACKAGES_$1}
-	sudo -E $${SCRIPT_DIR}/unmount_image.sh $${STAGING_$1} $${STAGE2_$1}
+$$(STAGE2_$1) : $$(STAGE1_$1) $$(STAGE2_DEPENDS_$1)
+	cp --sparse=always $$(STAGE1_$1) $$(STAGE2_$1)
+	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(STAGE2_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE2_PACKAGES_$1)
+	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE2_$1)
 
-$${BASE_$1} : $${STAGE2_$1} $${STAGE3_DEPENDS_$1} | $${IMAGE_ROOT}
-	cp --sparse=always $${STAGE2_$1} $${BASE_$1}
-	sudo -E $${SCRIPT_DIR}/mount_image.sh $${BASE_$1} $${STAGING_$1}
-	$${PACKAGE_ENV_$1} sudo -E $${SCRIPT_DIR}/install_packages.sh $${STAGING_$1} $${STAGE3_PACKAGES_$1}
-	sudo -E $${SCRIPT_DIR}/unmount_image.sh $${STAGING_$1} $${BASE_$1}
+$$(BASE_$1) : $$(STAGE2_$1) $$(STAGE3_DEPENDS_$1) | $$(IMAGE_ROOT)
+	cp --sparse=always $$(STAGE2_$1) $$(BASE_$1)
+	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE3_PACKAGES_$1)
+	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
 
-$${STAGE1_$1}: $${CONFIG_$1}/multistrap.config | $${BUILD_ROOT} $${CCACHEDIR}
+$$(STAGE1_$1): $$(CONFIG_$1)/multistrap.config | $$(BUILD_ROOT) $$(CCACHEDIR)
 	-rm $$@
-	sudo -E ${SCRIPT_DIR}/create_mount_img.sh $${STAGE1_$1} $${STAGING_$1}
-	$${PACKAGE_ENV_$1} sudo -E $${SCRIPT_DIR}/create_rootfs.sh $${STAGING_$1} $${CONFIG_$1}
-	sudo -E ${SCRIPT_DIR}/unmount_image.sh $${STAGING_$1} $${STAGE1_$1}
+	sudo -E $(SCRIPT_DIR)/create_mount_img.sh $$(STAGE1_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/create_rootfs.sh $$(STAGING_$1) $$(CONFIG_$1)
+	sudo -E $(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE1_$1)
 
 $$(SYSROOT_$1): $$(STAGE1_$1) | $$(SYSROOT_ROOT)
 	-rm -rf $$@
@@ -223,7 +223,7 @@ $$(SYSROOT_$1): $$(STAGE1_$1) | $$(SYSROOT_ROOT)
 sysroot_$1 : $$(SYSROOT_$1)
 
 .PHONY: sysroot_$1
-.PRECIOUS: $${STAGE1_$1} $${STAGE2_$2} $${BASE_$1}
+.PRECIOUS: $$(STAGE1_$1) $$(STAGE2_$2) $$(BASE_$1)
 
 qemu_check_$1:
 	$$(QEMU_$1) -version | fgrep 2.8.0
@@ -237,8 +237,8 @@ USED_ARCH := $(sort $(foreach board, $(BOARDS), $(value ARCH_$(board))))
 $(foreach board, $(BOARDS), $(eval $(call BOARD_SPECIFIC_RULES,$(board))))
 $(foreach arch, $(USED_ARCH), $(eval $(call ARCH_SPECIFIC_RULES,$(arch))))
 
-BOOT_FILES := $(foreach boot_var, $(patsubst %, BOOT_FILES_%, ${BOARDS}), $(value ${boot_var}))
-IMAGE_FILES := $(foreach image_var, $(patsubst %, IMAGE_%, ${BOARDS}), $(value ${image_var}))
+BOOT_FILES := $(foreach boot_var, $(patsubst %, BOOT_FILES_%, $(BOARDS)), $(value $(boot_var)))
+IMAGE_FILES := $(foreach image_var, $(patsubst %, IMAGE_%, $(BOARDS)), $(value $(image_var)))
 ALL_PACKAGES := $(sort $(foreach board, $(BOARDS), $(value STAGE3_PACKAGES_$(board)) $(value STAGE4_PACKAGES_$(board))) \
 		$(foreach arch, $(USED_ARCH), $(value STAGE2_PACKAGES_$(arch)) $(value STAGE3_PACKAGES_$(arch))))
 PACKAGE_CLEAN := $(patsubst %,PACKAGE_CLEAN_%, $(ALL_PACKAGES))
@@ -250,14 +250,14 @@ checkenv: $(patsubst %, qemu_check_%, $(USED_ARCH))
 	which ct-ng
 	which python | fgrep /usr/bin/python
 	sudo -n true
-	bash ${SCRIPT_DIR}/check_Env.sh
-	bash ${SCRIPT_DIR}/check_mounts.sh
+	bash $(SCRIPT_DIR)/check_Env.sh
+	bash $(SCRIPT_DIR)/check_mounts.sh
 
-boot_files: checkenv ${BOOT_FILES}
+boot_files: checkenv $(BOOT_FILES)
 
-images: checkenv ${IMAGE_FILES}
+images: checkenv $(IMAGE_FILES)
 
-real_all: checkenv ${BOOT_FILES} ${IMAGE_FILES}
+real_all: checkenv $(BOOT_FILES) $(IMAGE_FILES)
 
 sdx_sw: $(patsubst %, sdx_sw_%, $(BOARDS))
 
