@@ -168,6 +168,11 @@ $${STAGE1_$1}: $${CONFIG_$1}/multistrap.config | $${BUILD_ROOT} $${CCACHEDIR}
 
 .PRECIOUS: $${STAGE1_$1} $${STAGE2_$2} $${BASE_$1}
 
+qemu_check_$1:
+	$$(QEMU_$1) -version | fgrep 2.8.0
+
+.PHONY: qemu_check_$1
+
 endef
 
 USED_ARCH := $(sort $(foreach board, $(BOARDS), $(value ARCH_$(board))))
@@ -181,13 +186,11 @@ ALL_PACKAGES := $(sort $(foreach board, $(BOARDS), $(value STAGE3_PACKAGES_$(boa
 		$(foreach arch, $(USED_ARCH), $(value STAGE2_PACKAGES_$(arch)) $(value STAGE3_PACKAGES_$(arch))))
 PACKAGE_CLEAN := $(patsubst %,PACKAGE_CLEAN_%, $(ALL_PACKAGES))
 
-checkenv:
+checkenv: $(patsubst %, qemu_check_%, $(USED_ARCH))
 	which petalinux-config
 	which arm-linux-gnueabihf-gcc
 	which microblaze-xilinx-elf-gcc
 	which ct-ng
-	qemu-arm -version | fgrep 2.8.0
-	qemu-aarch64 -version | fgrep 2.8.0
 	which python | fgrep /usr/bin/python
 	sudo -n true
 	bash ${SCRIPT_DIR}/check_Env.sh
