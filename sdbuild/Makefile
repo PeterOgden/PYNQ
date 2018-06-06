@@ -12,6 +12,7 @@ BOOT_ROOT := ${CURDIR}/output/boot
 IMAGE_ROOT := ${CURDIR}/output
 CCACHEDIR := ${CURDIR}/ccache
 ROOTDIR := ${CURDIR}
+SDX_ROOT := $(IMAGE_ROOT)/sdx
 
 KERNEL_arm := zImage
 KERNEL_aarch64 := Image
@@ -33,6 +34,9 @@ ${BOOT_ROOT}:
 	mkdir -p $@
 
 ${CCACHEDIR}:
+	mkdir -p $@
+
+$(SDX_ROOT):
 	mkdir -p $@
 
 PYNQ_UPDATE := ${BUILD_ROOT}/PYNQ/.git/HEAD
@@ -133,6 +137,43 @@ $${IMAGE_$1} : $${BASE_PATH_$1} $${STAGE4_DEPENDS_$1} $${BOOT_FILES_$1} $${MODUL
 	cd $${STAGING_$1} && sudo tar -xf $${MODULES_$1}
 	sudo -E $${SCRIPT_DIR}/resize_umount.sh $${IMAGE_$1} $${STAGING_$1}
 
+
+# SDX Specific Rules
+
+SDX_DIR_$1 := $$(SDX_ROOT)/$1/sw
+SDX_LINUX_DIR_$1 := $$(SDX_DIR_$1)/linux
+SDX_BOOT_DIR_$1 := $$(SDX_LINUX_DIR_$1)/boot
+SDX_IMAGE_DIR_$1 := $$(SDX_LINUX_DIR_$1)/image
+SDX_FILES_$1 := $$(SDX_IMAGE_DIR_$1)/image.ub $$(patsubst %, $$(SDX_BOOT_DIR_$1)/%, $$(BOOT_$$(ARCH_$1))) $$(SDX_BOOT_DIR_$1)/linux.bif $$(SDX_BOOT_DIR_$1)/generic.readme
+
+$$(SDX_DIR_$1): | $$(SDX_ROOT)
+	mkdir -p $$@
+
+$$(SDX_LINUX_DIR_$1): | $$(SDX_DIR_$1)
+	mkdir -p $$@
+
+$$(SDX_BOOT_DIR_$1): | $$(SDX_LINUX_DIR_$1)
+	mkdir -p $$@
+
+$$(SDX_IMAGE_DIR_$1): | $$(SDX_LINUX_DIR_$1)
+	mkdir -p $$@
+
+$$(SDX_BOOT_DIR_$1)/%: $$(PL_PROJ_$1)/images/linux/% | $$(SDX_BOOT_DIR_$1)
+	cp $$< $$@
+
+$$(SDX_BOOT_DIR_$1)/linux.bif: $$(CURDIR)/boot/linux_$$(ARCH_$1).bif | $$(SDX_BOOT_DIR_$1)
+	cp $$< $$@
+
+$$(SDX_BOOT_DIR_$1)/generic.readme: $$(CURDIR)/boot/generic.readme | $$(SDX_BOOT_DIR_$1)
+	cp $$< $$@
+
+$$(SDX_IMAGE_DIR_$1)/image.ub: $$(BOOT_ROOT_$1)/image.ub | $$(SDX_IMAGE_DIR_$1)
+	cp $$< $$@
+
+sdx_sw_$1: $$(SDX_FILES_$1)
+
+.PHONY: sdx_sw_$1
+
 endef
 
 define ARCH_SPECIFIC_RULES
@@ -202,6 +243,8 @@ images: checkenv ${IMAGE_FILES}
 
 real_all: checkenv ${BOOT_FILES} ${IMAGE_FILES}
 
+sdx_sw: $(patsubst %, sdx_sw_%, $(BOARDS))
+
 # Default package clean target
 PACKAGE_CLEAN_%: ;
 
@@ -209,5 +252,5 @@ clean: $(PACKAGE_CLEAN)
 	-rm -rf $(BUILD_ROOT)
 	-rm -rf $(IMAGE_ROOT)
 
-.PHONY: boot_files images all clean real_all checkenv
+.PHONY: boot_files images all clean real_all checkenv sdx_sw
 
