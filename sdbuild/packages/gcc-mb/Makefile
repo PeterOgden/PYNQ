@@ -12,7 +12,7 @@ PACKAGE_BUILD_gcc-mb_arm += ${GCC_MB_WORKDIR}/arm/microblazeel-xilinx-elf/bin/mb
 PACKAGE_BUILD_gcc-mb_aarch64 += ${GCC_MB_WORKDIR}/aarch64/microblazeel-xilinx-elf/bin/mb-gcc
 
 PACKAGE_CLEAN_gcc-mb:
-	-chmod u+w -R ${GCC_MB_WORKDIR}
+	-if [ -e ${GCC_MB_WORKDIR} ]; then chmod u+w -fR ${GCC_MB_WORKDIR}; fi
 	-rm -rf ${GCC_MB_WORKDIR}
 
 ${GCC_MB_WORKDIR}/binutils: | ${GCC_MB_WORKDIR}
