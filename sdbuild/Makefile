@@ -1,7 +1,7 @@
 BOARDDIR ?= $(CURDIR)/../boards
 BOARDS ?= $(basename $(notdir $(wildcard $(BOARDDIR)/*/*.spec))) 
 UBUNTU_RELEASE := bionic
-VERSION := 2.2
+VERSION := 2.3
 
 SCRIPT_DIR := $(CURDIR)/scripts
 
@@ -146,9 +146,9 @@ $${IMAGE_$1} : $${BASE_PATH_$1} $${STAGE4_DEPENDS_$1} $${BOOT_FILES_$1} $${MODUL
 
 SDX_DIR_$1 := $$(SDX_ROOT)/$1/sw
 SDX_LINUX_DIR_$1 := $$(SDX_DIR_$1)/linux
-SDX_BOOT_DIR_$1 := $$(SDX_LINUX_DIR_$1)/boot
+SDX_BOOT_DIR_$1 := $$(SDX_DIR_$1)/boot
 SDX_IMAGE_DIR_$1 := $$(SDX_LINUX_DIR_$1)/image
-SDX_FILES_$1 := $$(SDX_IMAGE_DIR_$1)/image.ub $$(patsubst %, $$(SDX_BOOT_DIR_$1)/%, $$(BOOT_$$(ARCH_$1))) $$(SDX_BOOT_DIR_$1)/linux.bif $$(SDX_BOOT_DIR_$1)/generic.readme
+SDX_FILES_$1 := $$(SDX_IMAGE_DIR_$1)/image.ub $$(patsubst %, $$(SDX_BOOT_DIR_$1)/%, $$(BOOT_$$(ARCH_$1))) $$(SDX_LINUX_DIR_$1)/linux.bif $$(SDX_DIR_$1)/generic.readme
 
 $$(SDX_DIR_$1): | $$(SDX_ROOT)
 	mkdir -p $$@
@@ -156,7 +156,7 @@ $$(SDX_DIR_$1): | $$(SDX_ROOT)
 $$(SDX_LINUX_DIR_$1): | $$(SDX_DIR_$1)
 	mkdir -p $$@
 
-$$(SDX_BOOT_DIR_$1): | $$(SDX_LINUX_DIR_$1)
+$$(SDX_BOOT_DIR_$1): | $$(SDX_DIR_$1)
 	mkdir -p $$@
 
 $$(SDX_IMAGE_DIR_$1): | $$(SDX_LINUX_DIR_$1)
@@ -165,10 +165,10 @@ $$(SDX_IMAGE_DIR_$1): | $$(SDX_LINUX_DIR_$1)
 $$(SDX_BOOT_DIR_$1)/%: $$(PL_PROJ_$1)/images/linux/% | $$(SDX_BOOT_DIR_$1)
 	cp $$< $$@
 
-$$(SDX_BOOT_DIR_$1)/linux.bif: $$(CURDIR)/boot/linux_$$(ARCH_$1).bif | $$(SDX_BOOT_DIR_$1)
+$$(SDX_LINUX_DIR_$1)/linux.bif: $$(CURDIR)/boot/linux_$$(ARCH_$1).bif | $$(SDX_LINUX_DIR_$1)
 	cp $$< $$@
 
-$$(SDX_BOOT_DIR_$1)/generic.readme: $$(CURDIR)/boot/generic.readme | $$(SDX_BOOT_DIR_$1)
+$$(SDX_DIR_$1)/generic.readme: $$(CURDIR)/boot/generic.readme | $$(SDX_DIR_$1)
 	cp $$< $$@
 
 $$(SDX_IMAGE_DIR_$1)/image.ub: $$(BOOT_ROOT_$1)/image.ub | $$(SDX_IMAGE_DIR_$1)
