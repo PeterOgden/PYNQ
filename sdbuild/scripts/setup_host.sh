@@ -68,6 +68,7 @@ make
 sudo make install
 # Create the symlink that ubuntu expects
 cd /opt/qemu/bin
+sudo rm -rf qemu-arm-static qemu-aarch64-static
 sudo ln -s qemu-arm qemu-arm-static
 sudo ln -s qemu-aarch64 qemu-aarch64-static
 cd ~
