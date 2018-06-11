@@ -3,6 +3,9 @@
 set -e
 set -x
 
+# fdisk is in /sbin so let's make sure it's on the PATH
+export PATH=/sbin:$PATH
+
 image_dir=$2
 image_file=$1
 
@@ -27,7 +30,7 @@ sudo chroot / zerofree $root_dev
 
 sudo kpartx -d $image_file
 
-sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | sudo fdisk $1
+sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $1
   d # delete partition
   2 # rootfs partition
   n # new partition
