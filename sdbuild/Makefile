@@ -212,13 +212,13 @@ $$(STAGE1_$1): $$(CONFIG_$1)/multistrap.config | $$(BUILD_ROOT) $$(CCACHEDIR)
 	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/create_rootfs.sh $$(STAGING_$1) $$(CONFIG_$1)
 	sudo -E $(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE1_$1)
 
-$$(SYSROOT_$1): $$(STAGE1_$1) | $$(SYSROOT_ROOT)
+$$(SYSROOT_$1): $$(BASE_$1) | $$(SYSROOT_ROOT)
 	-rm -rf $$@
 	mkdir -p $$@
-	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(STAGE1_$1) $$(STAGING_$1)
+	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
 	cp -rd $$(STAGING_$1)/usr/include $$@
 	cp -rd $$(STAGING_$1)/usr/lib $$@
-	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE1_$1)
+	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
 
 sysroot_$1 : $$(SYSROOT_$1)
 
