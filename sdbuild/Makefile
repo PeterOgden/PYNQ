@@ -135,11 +135,14 @@ STAGING_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1
 
 $$(IMAGE_$1) : $$(BASE_PATH_$1) $$(STAGE4_DEPENDS_$1) $$(BOOT_FILES_$1) $$(MODULES_$1)
 	cp --sparse=always $$(BASE_PATH_$1) $$(IMAGE_$1)
-	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(IMAGE_$1) $$(STAGING_$1)
-	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE4_PACKAGES_$1)
+	$$(SCRIPT_DIR)/mount_image.sh $$(IMAGE_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE4_PACKAGES_$1)
 	sudo cp $$(BOOT_FILES_$1) $$(STAGING_$1)/boot
-	cd $$(STAGING_$1) && sudo tar -xf $$(MODULES_$1)
-	sudo -E $$(SCRIPT_DIR)/resize_umount.sh $$(IMAGE_$1) $$(STAGING_$1)
+	mkdir -p $$(BUILD_ROOT_$1)/modules
+	cd $$(BUILD_ROOT_$1)/modules && tar -xf $$(MODULES_$1)
+	sudo cp -r --no-preserve=ownership $$(BUILD_ROOT_$1)/modules/* $$(STAGING_$1)
+	rm -rf $$(BUILD_ROOT_$1)/modules
+	$$(SCRIPT_DIR)/resize_umount.sh $$(IMAGE_$1) $$(STAGING_$1)
 
 
 # SDX Specific Rules
@@ -196,29 +199,29 @@ SYSROOT_$1 := $$(SYSROOT_ROOT)/$1
 
 $$(STAGE2_$1) : $$(STAGE1_$1) $$(STAGE2_DEPENDS_$1)
 	cp --sparse=always $$(STAGE1_$1) $$(STAGE2_$1)
-	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(STAGE2_$1) $$(STAGING_$1)
-	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE2_PACKAGES_$1)
-	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE2_$1)
+	$$(SCRIPT_DIR)/mount_image.sh $$(STAGE2_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE2_PACKAGES_$1)
+	$$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE2_$1)
 
 $$(BASE_$1) : $$(STAGE2_$1) $$(STAGE3_DEPENDS_$1) | $$(IMAGE_ROOT)
 	cp --sparse=always $$(STAGE2_$1) $$(BASE_$1)
-	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
-	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE3_PACKAGES_$1)
-	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
+	$$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE3_PACKAGES_$1)
+	$$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
 
 $$(STAGE1_$1): $$(CONFIG_$1)/multistrap.config | $$(BUILD_ROOT) $$(CCACHEDIR)
 	-rm $$@
-	sudo -E $(SCRIPT_DIR)/create_mount_img.sh $$(STAGE1_$1) $$(STAGING_$1)
-	$$(PACKAGE_ENV_$1) sudo -E $$(SCRIPT_DIR)/create_rootfs.sh $$(STAGING_$1) $$(CONFIG_$1)
-	sudo -E $(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE1_$1)
+	$(SCRIPT_DIR)/create_mount_img.sh $$(STAGE1_$1) $$(STAGING_$1)
+	$$(PACKAGE_ENV_$1) $$(SCRIPT_DIR)/create_rootfs.sh $$(STAGING_$1) $$(CONFIG_$1)
+	$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(STAGE1_$1)
 
 $$(SYSROOT_$1): $$(BASE_$1) | $$(SYSROOT_ROOT)
 	-rm -rf $$@
 	mkdir -p $$@
-	sudo -E $$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
+	$$(SCRIPT_DIR)/mount_image.sh $$(BASE_$1) $$(STAGING_$1)
 	cp -rd $$(STAGING_$1)/usr/include $$@
 	cp -rd $$(STAGING_$1)/usr/lib $$@
-	sudo -E $$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
+	$$(SCRIPT_DIR)/unmount_image.sh $$(STAGING_$1) $$(BASE_$1)
 
 sysroot_$1 : $$(SYSROOT_$1)
 
@@ -249,7 +252,7 @@ checkenv: $(patsubst %, qemu_check_%, $(USED_ARCH))
 	which microblaze-xilinx-elf-gcc
 	which ct-ng
 	which python | fgrep /usr/bin/python
-	sudo -n true
+	sudo -n mount > /dev/null
 	bash $(SCRIPT_DIR)/check_Env.sh
 	bash $(SCRIPT_DIR)/check_mounts.sh
 

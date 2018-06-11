@@ -13,7 +13,9 @@ echo $QEMU_EXE
 export PATH=/opt/qemu/bin:$PATH
 
 # Perform the basic bootstrapping of the image
-$dry_run multistrap -f ${SRCDIR}/multistrap.config -d $target --no-auth
+$dry_run sudo -E multistrap -f ${SRCDIR}/multistrap.config -d $target --no-auth
+# Make sure the that the root is still writable by us
+sudo chroot / chmod a+w $target
 
 cat - > $target/postinst1.sh <<EOT
 /var/lib/dpkg/info/dash.preinst install
@@ -54,14 +56,14 @@ exit 0
 EOT
 
 # Copy over what we need to complete the installation
-$dry_run cp ${QEMU_EXE} $target/usr/bin
+$dry_run sudo cp ${QEMU_EXE} $target/usr/bin
 
-$dry_run chroot $target bash postinst1.sh
+$dry_run sudo -E chroot $target bash postinst1.sh
 # Finish the base install
 # Pass through special files so that the chroot works properly
 for fs in $fss
 do
-  $dry_run mount -o bind /$fs $target/$fs
+  $dry_run sudo mount -o bind /$fs $target/$fs
 done
 
 function unmount_special() {
@@ -69,14 +71,14 @@ function unmount_special() {
 # Unmount special files
 for fs in $fss
 do
-  $dry_run umount -l $target/$fs
+  $dry_run sudo umount -l $target/$fs
 done
 
 }
 
 trap unmount_special EXIT
 
-$dry_run chroot $target bash postinst2.sh
+$dry_run sudo -E chroot $target bash postinst2.sh
 
 $dry_run rm -f $target/postinst*.sh
 
@@ -85,7 +87,8 @@ $dry_run rm -f $target/postinst*.sh
 
 for f in $(cd ${SRCDIR}/patch && find -name "*.diff")
 do
-  $dry_run sudo patch $target/${f%.diff} < ${SRCDIR}/patch/$f
+  # Forgot about patch as well
+  $dry_run sudo chroot / patch $target/${f%.diff} < ${SRCDIR}/patch/$f
 done
 
 $script_dir/kill_chroot_processes.sh $target

@@ -13,6 +13,7 @@ mkdir -p jupyter_notebooks
 
 cd pynq_git
 python3.6 -m pip install . --upgrade
+sdbuild/packages/pynq/get_revision.sh > /home/xilinx/REVISION
 cd ..
 
 old_hostname=$(hostname)

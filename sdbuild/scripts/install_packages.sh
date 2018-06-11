@@ -11,19 +11,19 @@ fss="proc run dev"
 
 for fs in $fss
 do
-  $dry_run mount -o bind /$fs $target/$fs
+  $dry_run sudo mount -o bind /$fs $target/$fs
 done
 mkdir -p $target/ccache
-mount -o bind $CCACHEDIR $target/ccache
+sudo mount -o bind $CCACHEDIR $target/ccache
 
 function unmount_special() {
 
 # Unmount special files
 for fs in $fss
 do
-  $dry_run umount -l $target/$fs
+  $dry_run sudo umount -l $target/$fs
 done
-umount -l $target/ccache
+sudo umount -l $target/ccache
 rmdir $target/ccache || true
 }
 
@@ -50,7 +50,7 @@ do
   fi
   if [ -e $f/qemu.sh ]; then
     $dry_run cp $f/qemu.sh $target
-    $dry_run chroot $target bash qemu.sh
+    $dry_run sudo -E chroot $target bash qemu.sh
     $dry_run rm $target/qemu.sh
   fi
   if [ -e $f/post.sh ]; then
