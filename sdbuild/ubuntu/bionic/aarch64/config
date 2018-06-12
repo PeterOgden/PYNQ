@@ -1,2 +1,2 @@
 STAGE2_PACKAGES_aarch64 := gcc-mb python_packages_bionic xkcd libsds jupyter
-STAGE3_PACKAGES_aarch64 := pynq
+STAGE3_PACKAGES_aarch64 := pynq resizefs
