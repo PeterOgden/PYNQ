@@ -10,3 +10,4 @@ sudo cp -r $BUILD_ROOT/PYNQ $target/home/xilinx/pynq_git
 sudo cp $script_dir/pl_server.sh $target/usr/local/bin
 sudo cp $script_dir/pl_server.service $target/lib/systemd/system
 sudo cp $script_dir/pynq_hostname.sh $target/usr/local/bin
+sudo cp $script_dir/boardname.sh $target/etc/profile.d
