@@ -52,6 +52,7 @@ $(BUILD_ROOT)/PYNQ: | $(BUILD_ROOT)
 
 $(PYNQ_UPDATE): | $(BUILD_ROOT)/PYNQ
 	cd $(BUILD_ROOT)/PYNQ && git fetch origin && git checkout $(PYNQ_MASTER_COMMIT)
+	cp -rf $(BOARDDIR)/* $(BUILD_ROOT)/PYNQ/boards/
 
 ifneq "$(PYNQ_MASTER_COMMIT)" "$(PYNQ_CLONED_COMMIT)"
 .PHONY: $(PYNQ_UPDATE)
