@@ -9,11 +9,9 @@ SRCDIR=$2
 fss="proc dev"
 echo $QEMU_EXE
 
-# Make sure that our version of QEMU is on the PATH
-export PATH=/opt/qemu/bin:$PATH
-
 # Perform the basic bootstrapping of the image
 $dry_run sudo -E multistrap -f ${SRCDIR}/multistrap.config -d $target --no-auth
+
 # Make sure the that the root is still writable by us
 sudo chroot / chmod a+w $target
 
