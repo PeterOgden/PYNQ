@@ -1,6 +1,15 @@
 #!/bin/bash
 
-echo 'INTERFACES="usb0"' > /etc/default/isc-dhcp-server
+if [ -f /etc/default/isc-dhcp-server ] && \
+	grep -q "INTERFACES=" /etc/default/isc-dhcp-server; then
+	if ! grep -q "usb0" /etc/default/isc-dhcp-server; then
+		sed -i 's/\(INTERFACES=\)"\(.*\)"/\1"\2 usb0"/g' \
+		/etc/default/isc-dhcp-server
+	fi
+else
+	echo 'INTERFACES="usb0"' > /etc/default/isc-dhcp-server
+fi
+
 cat - > /etc/dhcp/dhcpd.conf <<EOT
 ddns-update-style none;
 

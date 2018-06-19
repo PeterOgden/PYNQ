@@ -16,7 +16,7 @@ echo 0x01 > bDeviceProtocol
 mkdir -p strings/0x409
 echo "0000" > strings/0x409/serialnumber
 echo "Xilinx Inc."   > strings/0x409/manufacturer
-echo ${PYNQ_BOARD}   > strings/0x409/product
+echo "PYNQ-USB"   > strings/0x409/product
 
 echo 1       > os_desc/use
 echo 0xcd    > os_desc/b_vendor_code
