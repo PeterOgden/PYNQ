@@ -8,7 +8,7 @@ script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 sudo cp -r $BUILD_ROOT/PYNQ $target/home/xilinx/pynq_git
 if [ ${PYNQ_BOARD} != "Unknown" ]; then
-	sudo cp -rf ${BOARDDIR}/${PYNQ_BOARD} \
+	sudo cp -rf ${PYNQ_BOARDDIR} \
 	$target/home/xilinx/pynq_git/boards/
 fi
 sudo cp $script_dir/pl_server.sh $target/usr/local/bin
