@@ -8,6 +8,7 @@ max_iterations=3
 
 read -d '' PACKAGES <<EOT
 sphinx-rtd-theme
+pandas
 deltasigma
 pyeda
 nbwavedrom
