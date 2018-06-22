@@ -326,7 +326,7 @@ else:
 
 pynq_package_files.extend(['tests/*', 'js/*', '*.bin', '*.so', '*.pdm'])
 setup(name='pynq',
-      version='2.1',
+      version='2.3',
       description='(PY)thon productivity for zy(NQ)',
       author='Xilinx PYNQ Development Team',
       author_email='pynq_support@xilinx.com',
