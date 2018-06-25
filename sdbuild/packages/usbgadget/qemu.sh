@@ -1,5 +1,17 @@
 #!/bin/bash
 
+
+if [ -f /usr/local/share/fatfs_contents/Welcome\ to\ Pynq.ipynb ]; then
+	mkdir /mnt/fatfs
+	mount /usr/local/share/fatfs /mnt/fatfs
+	jupyter nbconvert --to html \
+	/usr/local/share/fatfs_contents/Welcome\ to\ Pynq.ipynb
+	rm -f /usr/local/share/fatfs_contents/Welcome\ to\ Pynq.ipynb
+	cp -f /usr/local/share/fatfs_contents/Welcome\ to\ Pynq.html \
+	/mnt/fatfs
+	umount /mnt/fatfs
+fi
+
 if [ -f /etc/default/isc-dhcp-server ] && \
 	grep -q "INTERFACES=" /etc/default/isc-dhcp-server; then
 	if ! grep -q "usb0" /etc/default/isc-dhcp-server; then

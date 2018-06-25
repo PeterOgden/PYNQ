@@ -12,7 +12,7 @@ ${USB_WORKDIR}/fatfs: | ${USB_WORKDIR}/staging
 	truncate --size 50M ${USB_WORKDIR}/fatfs
 	mkfs -t fat -n "PYNQ-USB" ${USB_WORKDIR}/fatfs
 	sudo mount ${USB_WORKDIR}/fatfs ${USB_WORKDIR}/staging
-	sudo cp -r ${USB_SOURCEDIR}/fatfs/* ${USB_WORKDIR}/staging
+	sudo cp -rf ${USB_SOURCEDIR}/fatfs/* ${USB_WORKDIR}/staging
 	sudo umount ${USB_WORKDIR}/staging
 
 PACKAGE_BUILD_usbgadget += ${USB_WORKDIR}/fatfs
