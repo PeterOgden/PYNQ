@@ -1,0 +1,10 @@
+--- a/Xorg	2016-04-07 10:26:28.000000000 +0100
++++ b/Xorg	2017-09-05 11:50:20.393759493 +0100
+@@ -3,6 +3,7 @@
+ # Execute Xorg.wrap if it exists otherwise execute Xorg directly.
+ # This allows distros to put the suid wrapper in a separate package.
+ 
++export LD_PRELOAD=/usr/lib/xorg/pcidummy.so
+ basedir=/usr/lib/xorg
+ if [ -x "$basedir"/Xorg.wrap ]; then
+ 	exec "$basedir"/Xorg.wrap "$@"
