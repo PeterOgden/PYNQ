@@ -18,7 +18,10 @@ xhost + SI:localuser:xilinx
 # wmnd &
 # wmsmixer -w &
 # idesk &
-su xilinx -c chromium-browser "file:///usr/local/share/fatfs_contents/Welcome to Pynq.html"&
+if [ -f "/usr/local/share/x11/Welcome to Pynq.html" ]; then
+	su xilinx -c chromium-browser \
+	"file:///usr/local/share/x11/Welcome to Pynq.html"&
+fi
 
 # Debian-local change:
 #   - fbautostart has been added with a quick hack to check to see if it
