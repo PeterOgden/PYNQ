@@ -17,4 +17,8 @@ sudo cp $script_dir/pynq-background.png $target/usr/local/share
 sudo chroot / mkdir -p $target/home/xilinx/.config/chromium/Default
 sudo cp $script_dir/chromium_config $target/home/xilinx/.config/chromium/Default/Preferences
 sudo chroot / touch "$target/home/xilinx/.config/chromium/First Run"
-sudo cp $script_dir/Welcome.html $target/usr/local/share/
+sudo chroot / mkdir -p $target/usr/local/share/x11
+if [ -f $BUILD_ROOT/PYNQ/pynq/notebooks/Welcome\ to\ Pynq.ipynb ]; then
+	sudo cp -f $BUILD_ROOT/PYNQ/pynq/notebooks/Welcome\ to\ Pynq.ipynb \
+	$target/usr/local/share/x11/
+fi

@@ -3,6 +3,12 @@
 set -x
 set -e
 
+if [ -f /usr/local/share/x11/Welcome\ to\ Pynq.ipynb ]; then
+	jupyter nbconvert --to html \
+	/usr/local/share/x11/Welcome\ to\ Pynq.ipynb
+	rm -f /usr/local/share/x11/Welcome\ to\ Pynq.ipynb
+fi
+
 systemctl enable pynq-x11.service
 
 chown -R xilinx:xilinx /home/xilinx/.config/chromium
