@@ -1,6 +1,14 @@
 #!/bin/bash
 
-echo 'INTERFACES="usb0 wlan1"' > /etc/default/isc-dhcp-server
+if [ -f /etc/default/isc-dhcp-server ] && \
+	grep -q "INTERFACES=" /etc/default/isc-dhcp-server; then
+	if ! grep -q "wlan1" /etc/default/isc-dhcp-server; then
+		sed -i 's/\(INTERFACES=\)"\(.*\)"/\1"\2 wlan1"/g' \
+		/etc/default/isc-dhcp-server
+	fi
+else
+	echo 'INTERFACES="wlan1"' > /etc/default/isc-dhcp-server
+fi
 
 cat - >> /etc/dhcp/dhcpd.conf <<EOT
 

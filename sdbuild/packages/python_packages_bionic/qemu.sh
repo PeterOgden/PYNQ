@@ -7,12 +7,20 @@ iter_count=0
 max_iterations=3
 
 read -d '' PACKAGES <<EOT
+wheel
 sphinx-rtd-theme
+pandas
 deltasigma
 pyeda
 nbwavedrom
 RISE
 jupyter_contrib_nbextensions
+jupyter_nbextensions_configurator
+imutils
+dash==0.21.1
+dash-renderer==0.13.0
+dash-html-components==0.11.0
+dash-core-components==0.23.0
 EOT
 
 while [ -n "$PACKAGES" -a "$max_iterations" != "$iter_count" ];
