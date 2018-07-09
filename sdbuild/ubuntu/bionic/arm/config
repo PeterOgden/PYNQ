@@ -1,2 +1,2 @@
-STAGE2_PACKAGES_arm := gcc-mb python_packages_bionic xkcd libsds jupyter phantomjs-fix
+STAGE2_PACKAGES_arm := gcc-mb python_packages_bionic xkcd libsds jupyter phantomjs-fix pandas
 STAGE3_PACKAGES_arm := pynq resizefs
