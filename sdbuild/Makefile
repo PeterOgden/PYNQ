@@ -71,12 +71,12 @@ BUILD_ROOT_$1 := $$(BUILD_ROOT)/$1
 BOOT_ROOT_$1 := $$(BOOT_ROOT)/$1
 QEMU_$1 := $$(shell which qemu-$$(ARCH_$1)-static)
 PACKAGE_ENV_$1 := QEMU_EXE=$$(QEMU_$1) PYNQ_BOARDDIR=$$(BOARDDIR_$1) PYNQ_BOARD=$1 ARCH=$$(ARCH=$1) PACKAGE_PATH=$$(BOARDDIR_$1)/packages
-
 IMAGE_$1 := $$(IMAGE_ROOT)/$1-$$(VERSION).img
 
 PL_PROJ_$1 := $$(BUILD_ROOT_$1)/petalinux_project
 PL_CONFIG_$1 := $$(PL_PROJ_$1)/project-spec/configs/config
 MODULES_$1 := $$(PL_PROJ_$1)/build/tmp/deploy/images/plnx_$$(ARCH_$1)/modules-plnx_$$(ARCH_$1).tgz
+KERNEL_RPM_$1 := $$(PL_PROJ_$1)/build/tmp/deploy/rpm/plnx_$$(ARCH_$1)/kernel-devsrc-1.0-r0.plnx_$$(ARCH_$1).rpm
 
 BOOT_FILES_$1 := $$(BOOT_ROOT_$1)/image.ub $$(BOOT_ROOT_$1)/BOOT.BIN
 BOOT_DEPENDS_$1 := $$(patsubst %, $$(PL_PROJ_$1)/images/linux/%, $$(BOOT_$$(ARCH_$1)))
@@ -119,6 +119,9 @@ $$(PL_PROJ_$1)/images/linux/bl31.elf:  $$(PL_CONFIG_$1)
 
 $$(MODULES_$1): $$(PL_PROJ_$1)/images/linux/$$(KERNEL_$$(ARCH_$1))
 
+$$(KERNEL_RPM_$1): $$(PL_CONFIG_$1)
+	PYNQ_BOARDNAME=$1 petalinux-build -c kernel-devsrc -p $$(PL_PROJ_$1)
+
 $$(BUILD_ROOT_$1)/% : $$(PL_PROJ_$1)/images/linux/%
 	cp $$< $$@
 
@@ -133,7 +136,7 @@ BASE_PATH_$1 := $$(IMAGE_ROOT)/$$(BASE_$1)
 STAGE4_DEPENDS_$1 := $$(foreach package, $$(STAGE4_PACKAGES_$1), $$(PACKAGE_BUILD_$$(package)_$1) $$(PACKAGE_BUILD_$$(package)))
 STAGING_$1 := $$(BUILD_ROOT)/$$(UBUNTU_RELEASE).$1
 
-$$(IMAGE_$1) : $$(BASE_PATH_$1) $$(STAGE4_DEPENDS_$1) $$(BOOT_FILES_$1) $$(MODULES_$1)
+$$(IMAGE_$1) : $$(BASE_PATH_$1) $$(STAGE4_DEPENDS_$1) $$(BOOT_FILES_$1) $$(MODULES_$1) $$(KERNEL_RPM_$1)
 	cp --sparse=always $$(BASE_PATH_$1) $$(IMAGE_$1)
 	$$(SCRIPT_DIR)/mount_image.sh $$(IMAGE_$1) $$(STAGING_$1)
 	$$(PACKAGE_ENV_$1) $$(SCRIPT_DIR)/install_packages.sh $$(STAGING_$1) $$(STAGE4_PACKAGES_$1)
@@ -142,6 +145,8 @@ $$(IMAGE_$1) : $$(BASE_PATH_$1) $$(STAGE4_DEPENDS_$1) $$(BOOT_FILES_$1) $$(MODUL
 	cd $$(BUILD_ROOT_$1)/modules && tar -xf $$(MODULES_$1)
 	sudo cp -r --no-preserve=ownership $$(BUILD_ROOT_$1)/modules/* $$(STAGING_$1)
 	rm -rf $$(BUILD_ROOT_$1)/modules
+	rpm2cpio $$(KERNEL_RPM_$1) | sudo chroot $$(STAGING_$1) cpio -id
+	sudo chroot $$(STAGING_$1) depmod -a 4.9.0-xilinx-v2017.4
 	$$(SCRIPT_DIR)/resize_umount.sh $$(IMAGE_$1) $$(STAGING_$1)
 
 
