@@ -14,6 +14,7 @@ nbwavedrom
 RISE
 jupyter_contrib_nbextensions
 jupyter_nbextensions_configurator
+jupyterlab
 imutils
 dash==0.21.1
 dash-renderer==0.13.0
