@@ -49,6 +49,13 @@ def _resolve_bitstream(bitfile_path, device):
             return local_bitfile
     return None
 
+def _find_dtbo_file(dtbo_path, bitfile_path):
+    if os.path.exists(dtbo_path):
+        return os.path.abspath(dtbo_path)
+    relative_path = os.path.join(os.path.dirname(bitfile_path), dtbo_path)
+    if os.path.exists(relative_path):
+        return relative_path
+    return None
 
 class Bitstream:
     """This class instantiates the meta class for PL bitstream (full/partial).
@@ -117,14 +124,14 @@ class Bitstream:
             raise IOError('Bitstream file {} does not exist.'.format(
                 bitfile_name))
 
-        self.dtbo = dtbo
-        if dtbo:
-            default_dtbo = get_dtbo_path(self.bitfile_name)
-            if os.path.exists(dtbo):
-                self.dtbo = dtbo
-            elif os.path.exists(default_dtbo):
-                self.dtbo = default_dtbo
-            else:
+        self.dtbo = None
+        default_dtbo = get_dtbo_path(self.bitfile_name)
+        if dtbo is None:
+           if os.path.exists(default_dtbo):
+               self.dtbo = default_dtbo
+        else:
+            self.dtbo = _find_dtbo_file(dtbo, self.bitfile_name)
+            if self.dtbo is None:
                 raise IOError("DTBO file {} does not exist.".format(
                     dtbo))
 
@@ -179,13 +186,9 @@ class Bitstream:
 
         """
         if dtbo:
-            default_dtbo = get_dtbo_path(self.bitfile_name)
-            default_dtbo_folder = '/'.join(default_dtbo.split('/')[:-1])
-            absolute_dtbo = os.path.join(default_dtbo_folder, dtbo)
-            if os.path.exists(dtbo):
-                self.dtbo = dtbo
-            elif os.path.exists(absolute_dtbo):
-                self.dtbo = absolute_dtbo
+            resolved_dtbo = _find_dtbo_file(dtbo, self.bitfile_name)
+            if resolved_dtbo:
+                self.dtbo = resolved_dtbo
             else:
                 raise IOError("DTBO file {} does not exist.".format(
                     dtbo))
