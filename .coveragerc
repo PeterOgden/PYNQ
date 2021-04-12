@@ -4,7 +4,5 @@ branch = True
 [report]
 omit =
     pynq/lib/*
-    pynq/ert.py
-    pynq/xclbin.py
-    pynq/tinynumpy.py
+    pynq/_3rdparty
     pynq/_cli/*
