@@ -111,6 +111,42 @@ def test_pynq_overlay(tmpdir, device, monkeypatch):
     assert bs.bitfile_name == os.path.join(overlay_path, BITSTREAM_FILE)
 
 
+def test_pynq_overlay_duplicate(tmpdir, device, monkeypatch):
+    pynqdir = os.path.join(tmpdir, 'pynq')
+    os.mkdir(pynqdir)
+    os.mkdir(os.path.join(pynqdir, 'overlays_1'))
+    os.mkdir(os.path.join(pynqdir, 'overlays_2'))
+    overlay_path_1 = os.path.join(pynqdir, 'overlays_1',
+                                os.path.splitext(BITSTREAM_FILE)[0])
+    overlay_path_2 = os.path.join(pynqdir, 'overlays_2',
+                                os.path.splitext(BITSTREAM_FILE)[0])
+    os.mkdir(overlay_path_1)
+    os.mkdir(overlay_path_2)
+    create_file(os.path.join(overlay_path_1, BITSTREAM_FILE), BITSTREAM_DATA)
+    create_file(os.path.join(overlay_path_2, BITSTREAM_FILE), BITSTREAM_DATA)
+    set_pynq_path(os.path.join(pynqdir, 'overlays_1'), monkeypatch,
+                  [os.path.join(pynqdir, 'overlays_2')])
+    with pytest.warns(UserWarning):
+        bs = pynq.Bitstream(BITSTREAM_FILE, device=device)
+    assert bs.bitfile_name == os.path.join(overlay_path_1, BITSTREAM_FILE)
+
+
+def test_pynq_overlay_cwd(tmpdir, device, monkeypatch):
+    pynqdir = os.path.join(tmpdir, 'pynq')
+    os.mkdir(pynqdir)
+    os.mkdir(os.path.join(pynqdir, 'overlays'))
+    overlay_path = os.path.join(pynqdir, 'overlays',
+                                os.path.splitext(BITSTREAM_FILE)[0])
+    os.mkdir(overlay_path)
+    create_file(os.path.join(overlay_path, BITSTREAM_FILE), BITSTREAM_DATA)
+    set_pynq_path(os.path.join(pynqdir, 'overlays'), monkeypatch)
+
+    create_file(os.path.join(tmpdir, BITSTREAM_FILE), BITSTREAM_DATA)
+    with pytest.warns(UserWarning):
+        with working_directory(tmpdir):
+            bs = pynq.Bitstream(BITSTREAM_FILE, device=device)
+    assert bs.bitfile_name == os.path.join(tmpdir, BITSTREAM_FILE)
+
 def test_missing_dtbo(tmpdir, device):
     create_file(os.path.join(tmpdir, BITSTREAM_FILE), BITSTREAM_DATA)
     with pytest.raises(IOError):
